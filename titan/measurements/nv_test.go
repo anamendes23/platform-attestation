@@ -44,9 +44,9 @@ func TestNVPublicName(t *testing.T) {
 	expected := expectedWarmResetNVPublic
 	publicBytes := tpm2.Marshal(&expected)
 
-	name, err := nvPublicName(publicBytes)
+	name, err := cpuWarmResetNvPublicName(publicBytes)
 	if err != nil {
-		t.Fatalf("nvPublicName failed: %v", err)
+		t.Fatalf("cpuWarmResetNvPublicName failed: %v", err)
 	}
 
 	expectedName, err := tpm2.NVName(&expected)
@@ -89,7 +89,7 @@ func TestNVPublicNameErrors(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := nvPublicName(tc.publicBytes)
+			_, err := cpuWarmResetNvPublicName(tc.publicBytes)
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}
@@ -114,9 +114,9 @@ func TestExtractNV(t *testing.T) {
 	}
 	attestBytes := tpm2.Marshal(&attest)
 
-	got, err := extractNV(attestBytes, nonce)
+	got, err := extractCpuWarmResetNV(attestBytes, nonce)
 	if err != nil {
-		t.Fatalf("extractNV failed: %v", err)
+		t.Fatalf("extractCpuWarmResetNV failed: %v", err)
 	}
 
 	if !cmp.Equal(got, &nvInfo, nvCmpOpts...) {
@@ -167,7 +167,7 @@ func TestExtractNVErrors(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := extractNV(tc.tpmsattest, tc.nonce)
+			_, err := extractCpuWarmResetNV(tc.tpmsattest, tc.nonce)
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}
