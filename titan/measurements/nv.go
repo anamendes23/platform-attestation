@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package measurements contains functions for verifying measurements.
 package measurements
 
 import (
@@ -35,6 +34,8 @@ const (
 	warmResetHash   tpm2.TPMAlgID = tpm2.TPMAlgSHA256
 )
 
+// expectedNVAttributes defines the expected attributes for the warm reset NV
+// index, which is of type Counter.
 var expectedNVAttributes tpm2.TPMANV = tpm2.TPMANV{
 	PPWrite:        false,
 	OwnerWrite:     false,
@@ -71,12 +72,12 @@ func VerifyWarmResetNVIndex(certify *apb.TpmAuxiliaryAttestation_SignedNvCertify
 		return -1, fmt.Errorf("failed to verify NV signature: %v", err)
 	}
 
-	nv, err := extractNV(certify.GetTpmsAttest(), nonce)
+	nv, err := extractCpuWarmResetNV(certify.GetTpmsAttest(), nonce)
 	if err != nil {
 		return -1, fmt.Errorf("failed to extract NV: %v", err)
 	}
 
-	expectedName, err := nvPublicName(certify.GetTpmsNvPublic())
+	expectedName, err := cpuWarmResetNvPublicName(certify.GetTpmsNvPublic())
 	if err != nil {
 		return -1, fmt.Errorf("failed to get NV public name: %v", err)
 	}
@@ -102,7 +103,7 @@ func VerifyWarmResetNVIndex(certify *apb.TpmAuxiliaryAttestation_SignedNvCertify
 	return warmResetCount, nil
 }
 
-func nvPublicName(publicBytes []byte) (*tpm2.TPM2BName, error) {
+func cpuWarmResetNvPublicName(publicBytes []byte) (*tpm2.TPM2BName, error) {
 	nvPublic, err := tpm2.Unmarshal[tpm2.TPMSNVPublic](publicBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal NV public: %v", err)
@@ -132,7 +133,7 @@ func nvPublicName(publicBytes []byte) (*tpm2.TPM2BName, error) {
 	return tpm2.NVName(nvPublic)
 }
 
-func extractNV(tpmsattest []byte, nonce []byte) (*tpm2.TPMSNVCertifyInfo, error) {
+func extractCpuWarmResetNV(tpmsattest []byte, nonce []byte) (*tpm2.TPMSNVCertifyInfo, error) {
 	attest, err := tpm2.Unmarshal[tpm2.TPMSAttest](tpmsattest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal attestation: %v", err)

@@ -89,3 +89,19 @@ func ParseTitanDiceScribeCertificateChain(data []byte) (*TitanDiceScribeCertific
 		DeviceIDScribeCertificate: *didsc,
 	}, nil
 }
+
+// ParseEKCertificate parses a byte slice into an EKCertificate.
+func ParseEKCertificate(data []byte) (*EKCertificate, error) {
+	ekc := &EKCertificate{}
+	r := bytes.NewReader(data)
+	if err := binary.Read(r, binary.LittleEndian, &ekc.Header); err != nil {
+		return nil, fmt.Errorf("failed to read EKCertificate header: %v", err)
+	}
+	if err := binary.Read(r, binary.LittleEndian, &ekc.PublicKey); err != nil {
+		return nil, fmt.Errorf("failed to read EKCertificate public key: %v", err)
+	}
+	if err := binary.Read(r, binary.LittleEndian, &ekc.Signature); err != nil {
+		return nil, fmt.Errorf("failed to read EKCertificate signature: %v", err)
+	}
+	return ekc, nil
+}
